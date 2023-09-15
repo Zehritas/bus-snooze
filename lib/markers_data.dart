@@ -59,7 +59,7 @@ class BusMarker extends Marker {
                       actions: <Widget>[
                         TextButton(
                           onPressed: () {
-                            Navigator.of(context).pop(); // Close the dialog
+                            Navigator.of(context).pop();
                           },
                           child: Text('OK'),
                         ),
@@ -67,13 +67,12 @@ class BusMarker extends Marker {
                           onPressed: () {
                             onSetDestination(point.latitude, point.longitude);
                             print("Destination now is ${name}");
-                            Navigator.of(context).pop(); // Close the dialog
+                            Navigator.of(context).pop();
 
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => DestinationScreen(
-                                    // locationManager: LocationManager.instance,
                                     destinationPosition:
                                         LatLng(point.latitude, point.longitude),
                                   ),
@@ -107,13 +106,6 @@ class MarkerData {
         point: LatLng(stop.stopLat, stop.stopLon),
         onSetDestination: onSetDestination,
         context: context,
-        onTap: () {
-          // Define actions to be performed when the marker is tapped.
-          print('Markerdaaaaaaaaaaaaaaaaa tapped!');
-          // Add your custom logic here.
-        },
-
-        // builder: (context) => CustomMarkerIcon(),
       );
       markers.add(marker);
     }
@@ -157,7 +149,6 @@ class CustomMarkerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // width: 20.0,
       height: 20.0,
       decoration: BoxDecoration(
         color: Colors.deepPurple,

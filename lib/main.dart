@@ -1,28 +1,104 @@
 import 'dart:async';
-// import 'dart:js_util';
+import 'dart:ui';
 
 import 'package:alarm/alarm.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-import 'package:flutter_map_supercluster/flutter_map_supercluster.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:bus_snooze/loading_screen.dart';
 import 'location_manager.dart';
 import 'markers_data.dart';
-import 'package:geolocator/geolocator.dart';
 import 'search_delegate.dart';
-// import 'destination_screen.dart';
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_map_supercluster/flutter_map_supercluster.dart';
 // import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
-// import 'station_popup.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+  await initService();
   await Alarm.init();
+}
+
+Future<void> initService() async {
+  final service = FlutterBackgroundService();
+
+  await service.configure(
+      iosConfiguration: IosConfiguration(),
+      androidConfiguration: AndroidConfiguration(
+          onStart: onStart,
+          isForegroundMode: true,
+          autoStartOnBoot: false,
+          autoStart: false));
+  // await service.startService();
+}
+
+@pragma('vm:entry-point')
+Future<void> onStart(ServiceInstance service) async {
+  DartPluginRegistrant.ensureInitialized();
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  LocationManager locationManager = LocationManager();
+  locationManager.updateLocation();
+
+  // locationManager.updateLocation();
+  // distanceToDestination = calculateDistance(
+  //     locationManager.currentPosition!.latitude,
+  //     locationManager.currentPosition!.longitude,
+  //     widget.destinationPosition.latitude,
+  //     widget.destinationPosition.longitude,
+  //     distanceToDestination);
+  // if (distanceToDestination <= distanceToAwake && !isAlarmActive) {
+  //   triggerAlarm();
+  // }
+  Timer.periodic(const Duration(seconds: 1), (timer) async {
+    if (service is AndroidServiceInstance) {
+      if (await service.isForegroundService()) {
+        /// OPTIONAL for use custom notification
+        /// the notification id must be equals with AndroidConfiguration when you call configure() method.
+        // flutterLocalNotificationsPlugin.show(
+        //   888,
+        //   'COOL SERVICE',
+        //   'Awesome ${DateTime.now()}',
+        //   const NotificationDetails(
+        //     android: AndroidNotificationDetails(
+        //       'my_foreground',
+        //       'MY FOREGROUND SERVICE',
+        //       icon: 'ic_bg_service_small',
+        //       ongoing: true,
+        //     ),
+        //   ),
+        // );
+        await locationManager.updateLocation();
+        // if you don't using custom notification, uncomment this
+        service.setForegroundNotificationInfo(
+          title: "Tavo Lokacija",
+          content:
+              "${locationManager.currentPosition!.latitude}, ${locationManager.currentPosition!.longitude}",
+        );
+      }
+    }
+  });
+
+  /// you can see this log in logcat
+  // print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
 }
 
 class MyApp extends StatelessWidget {
@@ -57,11 +133,10 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> busStationNames = [];
   final MapController mapController = MapController();
   LocationManager locationManager = LocationManager.instance;
-  // MarkerData markerData = MarkerData(context);
 
   @override
   void initState() {
-    print("Current Position1: ${locationManager.currentPosition}");
+    // print("Current Position1: ${locationManager.currentPosition}");
 
     super.initState();
     loadMarkers().then((markers) {
@@ -74,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         locationManager.updateLocation();
       });
-      print("Current Position2: ${locationManager.currentPosition}");
+      // print("Current Position2: ${locationManager.currentPosition}");
     });
   }
 
@@ -82,6 +157,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     locationManager.positionStreamController.close();
     locationManager.locationSubscription.cancel();
+    FlutterBackgroundService().invoke('stopService');
+    // service.invoke("stopService");
     super.dispose();
   }
 
@@ -178,7 +255,6 @@ class _MyHomePageState extends State<MyHomePage> {
               child: FlutterMap(
                 mapController: mapController,
                 options: MapOptions(
-                  // onTap: (_, __) => _popupLayerController.hideAllPopups(),
                   center: LatLng(
                       locationManager.currentPosition?.latitude ?? 55.1735998,
                       locationManager.currentPosition?.longitude ?? 23.8948016),

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:alarm/alarm.dart';
 import 'package:alarm/model/alarm_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:latlong2/latlong.dart';
 import 'location_manager.dart';
 
@@ -28,7 +29,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
   @override
   void initState() {
     super.initState();
-
+    FlutterBackgroundService().startService();
     locationManager.updateLocation();
     distanceToDestination = calculateDistance(
         locationManager.currentPosition!.latitude,
@@ -45,7 +46,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
       dateTime: initialDateTime,
       assetAudioPath: 'assets/alarm.mp3',
       loopAudio: true,
-      vibrate: false,
+      vibrate: true,
       volumeMax: false,
       fadeDuration: 3.0,
       notificationTitle: 'Bus stop nearby!',
@@ -54,7 +55,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
     );
     // Set up a timer to trigger a refresh every 10 seconds
     _timer = Timer.periodic(Duration(seconds: 5), (timer) async {
-      locationManager.updateLocation();
+      await locationManager.updateLocation();
       distanceToDestination = calculateDistance(
           locationManager.currentPosition!.latitude,
           locationManager.currentPosition!.longitude,
@@ -109,6 +110,9 @@ class _DestinationScreenState extends State<DestinationScreen> {
   @override
   void dispose() {
     _timer.cancel();
+    turnOffAlarm();
+
+    FlutterBackgroundService().invoke('stopService');
     super.dispose();
   }
 
