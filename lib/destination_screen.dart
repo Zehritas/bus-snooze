@@ -2,12 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:alarm/alarm.dart';
 import 'package:alarm/model/alarm_settings.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
-import 'main.dart';
 import 'location_manager.dart';
 
 class DestinationScreen extends StatefulWidget {
