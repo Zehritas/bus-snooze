@@ -93,20 +93,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // void changeToDestinationScreen() {
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => DestinationScreen(
-  //         updatePositionAndAddress: updatePositionAndAddress,
-  //         getETA: updateETA,
-  //         currentPosition: LatLng(_currentLat, _currentLng),
-  //         destinationPosition: destinationPosition!,
-  //       ),
-  //     ),
-  //   );
-  // }
-
   List<String> loadBusStationNames(List<BusMarker> markers) {
     List<String> stationNames = [];
     for (BusMarker marker in markers) {

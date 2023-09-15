@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'package:latlong2/latlong.dart';
 
 class LocationManager {
   String? currentAddress;
@@ -135,46 +134,4 @@ class LocationManager {
     // print('${LocationManager.currentPosition}');
     // print('${LocationManager.currentAddress}');
   }
-
-  Future<void> updateETA(double currentLatitude, double currentLongitude,
-      double destinationLatitude, double destinationLongitude) async {
-    Dio dio = new Dio();
-    try {
-      // Extract latitude and longitude values from the Position objects
-      // double currentLatitude = this.des.latitude;
-      // double currentLongitude = currentPosition.longitude;
-      // double destinationLatitude = destinationPosition.latitude;
-      // double destinationLongitude = destinationPosition.longitude;
-      // Construct the URL using the extracted latitude and longitude values
-      String url =
-          "https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=$currentLatitude,$currentLongitude&destinations=$destinationLatitude,$destinationLongitude&key=AIzaSyAsu3ger-jQLY_5K9XySthyRBRIhgiMO_A";
-
-      Response response = await dio.get(url);
-      Map<String, dynamic> responseData = response.data;
-
-      // Check if the status in the response is "OK"
-      if (responseData["status"] == "OK") {
-        // Extract the duration text (e.g., "6 mins") from the response
-        String durationText =
-            responseData["rows"][0]["elements"][0]["duration"]["text"];
-        String distanceText =
-            responseData["rows"][0]["elements"][0]["distance"]["text"];
-        print("Estimated arrival time: $durationText");
-        print("Distance left: $distanceText");
-      } else {
-        // Handle other status values if needed
-        print("Error: Unable to get ETA");
-        return null;
-      }
-    } catch (e) {
-      print(e);
-      return null;
-    }
-  }
-  // Future<void> updateEverythingTest() async {
-  //   // Update the position
-  //   await getCurrentPosition();
-  //   // Update the address based on the new position
-  //   await getAddressFromLatLng(currentPosition!);
-  // }
 }
